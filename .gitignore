@@ -28,3 +28,6 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+# air files
+bin/
+temp/

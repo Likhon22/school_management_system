@@ -19,5 +19,6 @@ func (mw *Middleware) Cors(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+
 	})
 }

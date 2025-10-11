@@ -1,6 +1,8 @@
 package middlewares
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func (mw *Middleware) SecurityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,5 +29,6 @@ func (mw *Middleware) SecurityHeaders(next http.Handler) http.Handler {
 		// w.Header().Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
 
 		next.ServeHTTP(w, r)
+
 	})
 }

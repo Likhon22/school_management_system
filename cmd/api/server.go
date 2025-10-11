@@ -20,7 +20,7 @@ func main() {
 	// 	MinVersion: tls.VersionTLS12,
 	// }
 	mw := middlewares.Middleware{}
-	wrappedMux := middlewares.ChainMiddleware(mux, mw.SecurityHeaders)
+	wrappedMux := middlewares.ChainMiddleware(mux, mw.Cors, mw.SecurityHeaders)
 	server := &http.Server{
 		Addr:    port,
 		Handler: wrappedMux,

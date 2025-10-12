@@ -1,3 +1,5 @@
 package middlewares
 
-type Middleware struct{}
+type Middleware struct {
+	IPLimiter *ipLimiter
+}

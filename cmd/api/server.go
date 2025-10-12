@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"school-management-system/internal/api/middlewares"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -24,8 +25,17 @@ func main() {
 	// tlsconfig := &tls.Config{
 	// 	MinVersion: tls.VersionTLS12,
 	// }
-	mw := middlewares.Middleware{}
-	wrappedMux := middlewares.ChainMiddleware(mux, mw.Cors, mw.Compression, mw.Logger, mw.SecurityHeaders)
+	mw := middlewares.Middleware{
+		IPLimiter: middlewares.NewIPLimiter(time.Minute/12, 5),
+	}
+	wrappedMux := middlewares.ChainMiddleware(
+		mux,
+		mw.Logger,                // log everything including blocked requests
+		mw.Cors,                  // must run early to avoid browser CORS errors
+		mw.IPLimiter.RateLimiter, // block excessive requests before heavy processing
+		mw.SecurityHeaders,       // set headers before sending response
+		mw.Compression,           // compress last, after everything else is wrapped
+		mw.SecurityHeaders)
 	server := &http.Server{
 		Addr:    port,
 		Handler: wrappedMux,

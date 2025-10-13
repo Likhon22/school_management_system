@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -46,7 +45,7 @@ func (rl *ipLimiter) RateLimiter(next http.Handler) http.Handler {
 			return
 
 		}
-		fmt.Println("from rate limiting")
+
 		next.ServeHTTP(w, r)
 
 	})

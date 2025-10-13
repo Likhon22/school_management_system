@@ -24,7 +24,12 @@ func (mw *Middleware) Logger(next http.Handler) http.Handler {
 		next.ServeHTTP(rw, r)
 
 		duration := time.Since(start)
-		log.Info().
+		event := log.Info()
+		if rw.statusCode >= 400 {
+			event = log.Error()
+
+		}
+		event.
 			Str("method", r.Method).
 			Str("path", r.URL.Path).
 			Int("status", rw.statusCode).

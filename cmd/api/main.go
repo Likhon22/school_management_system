@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"school-management-system/internal/api/handlers/teachers"
 	"school-management-system/internal/api/middlewares"
 	"school-management-system/internal/api/router"
 	"school-management-system/internal/config"
 	"school-management-system/internal/infra/db"
+	"school-management-system/internal/repository"
 	"school-management-system/pkg/utils"
 	"time"
 
@@ -18,17 +20,6 @@ import (
 func main() {
 	cnf := config.GetConfig()
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-	mux := router.Router()
-
-	//if want to use https
-	// cert := "cert.pem"
-	// pem := "key.pem"
-	// tlsconfig := &tls.Config{
-	// 	MinVersion: tls.VersionTLS12,
-	// }
-	mw := middlewares.Middleware{
-		IPLimiter: middlewares.NewIPLimiter(time.Minute/12, 5),
-	}
 	db, err := db.ConnectDB(cnf.DBCnf)
 	if err != nil {
 		log.Error().
@@ -39,6 +30,15 @@ func main() {
 	}
 	defer db.Close()
 	log.Info().Msg("database connected successfully")
+	//teacher handler
+	teacherRepo := repository.NewTeacherRepo(db)
+	teacherHandler := teachers.NewHandler(teacherRepo)
+	mux := router.SetupRoutes(teacherHandler)
+
+	mw := middlewares.Middleware{
+		IPLimiter: middlewares.NewIPLimiter(time.Minute/12, 5),
+	}
+
 	wrappedMux := utils.ChainMiddleware(
 		mux,
 		mw.Logger,                // log everything including blocked requests

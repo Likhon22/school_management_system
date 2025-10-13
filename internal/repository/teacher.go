@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
 	"school-management-system/internal/api/handlers/teachers"
 	"school-management-system/internal/models"
 	"school-management-system/pkg/utils"
@@ -62,12 +63,13 @@ RETURNING id, first_name, last_name, email, class, subject, created_at, updated_
 	return createdTeacher, nil
 }
 
-func (tc *teacherRepo) Get(ctx context.Context, filters map[string]string) ([]*models.Teacher, error) {
+func (tc *teacherRepo) Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Teacher, error) {
 
 	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM teachers`
 	filteredQuery, args := utils.BuildFilteredQuery(query, filters, true)
-
-	rows, err := tc.db.QueryContext(ctx, filteredQuery, args...)
+	finalQuery := filteredQuery + utils.BuildSortQuery(sort)
+	log.Println(finalQuery)
+	rows, err := tc.db.QueryContext(ctx, finalQuery, args...)
 	if err != nil {
 		return nil, err
 	}

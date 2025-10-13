@@ -7,6 +7,6 @@ import (
 
 type TeacherService interface {
 	CREATE(context.Context, models.Teacher) (*models.Teacher, error)
-	Get(ctx context.Context, firstName, lastName string) ([]*models.Teacher, error)
-	GetTeacherById(ctx context.Context, id int) (*models.Teacher, error)
+	Get(context.Context, map[string]string) ([]*models.Teacher, error)
+	GetTeacherById(context.Context, int) (*models.Teacher, error)
 }

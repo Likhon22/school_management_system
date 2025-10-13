@@ -8,10 +8,16 @@ import (
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 
-	firstName := r.URL.Query().Get("first_name")
-	lastName := r.URL.Query().Get("last_name")
+	params := map[string]string{
+		"first_name": "first_name",
+		"last_name":  "last_name",
+		"subject":    "subject",
+		"class":      "class",
+	}
+	filters := utils.BUildFilters(r, params)
 
-	teachers, err := h.service.Get(r.Context(), firstName, lastName)
+	fmt.Println(filters)
+	teachers, err := h.service.Get(r.Context(), filters)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Error fetching user", http.StatusInternalServerError)

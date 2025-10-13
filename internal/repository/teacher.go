@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"school-management-system/internal/api/handlers/teachers"
 	"school-management-system/internal/models"
+	"school-management-system/pkg/utils"
 )
 
 type teacherRepo struct {
@@ -62,25 +62,12 @@ RETURNING id, first_name, last_name, email, class, subject, created_at, updated_
 	return createdTeacher, nil
 }
 
-func (tc *teacherRepo) Get(ctx context.Context, firstName, lastName string) ([]*models.Teacher, error) {
+func (tc *teacherRepo) Get(ctx context.Context, filters map[string]string) ([]*models.Teacher, error) {
 
-	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM teachers WHERE 1=1`
-	var args []interface{}
-	argCount := 1
-	if firstName != "" {
-		query += fmt.Sprintf(` AND first_name LIKE $%d`, argCount)
-		args = append(args, "%"+firstName+"%")
-		argCount++
+	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM teachers`
+	filteredQuery, args := utils.BuildFilteredQuery(query, filters, true)
 
-	}
-	if lastName != "" {
-		query += fmt.Sprintf(` AND last_name LIKE $%d`, argCount)
-		args = append(args, "%"+lastName+"%")
-		argCount++
-
-	}
-
-	rows, err := tc.db.QueryContext(ctx, query, args...)
+	rows, err := tc.db.QueryContext(ctx, filteredQuery, args...)
 	if err != nil {
 		return nil, err
 	}

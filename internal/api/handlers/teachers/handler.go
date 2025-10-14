@@ -1,13 +1,16 @@
 package teachers
 
-import "school-management-system/internal/validation"
+import (
+	"school-management-system/internal/service"
+	"school-management-system/internal/validation"
+)
 
 type Handler struct {
-	service   TeacherService
+	service   service.TeacherService
 	validator *validation.Validator
 }
 
-func NewHandler(TeacherService TeacherService, validator *validation.Validator) *Handler {
+func NewHandler(TeacherService service.TeacherService, validator *validation.Validator) *Handler {
 	return &Handler{
 		service:   TeacherService,
 		validator: validator,

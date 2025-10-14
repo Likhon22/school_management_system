@@ -1,42 +1,16 @@
 package teachers
 
+import "school-management-system/internal/validation"
+
 type Handler struct {
-	service TeacherService
+	service   TeacherService
+	validator *validation.Validator
 }
 
-func NewHandler(TeacherService TeacherService) *Handler {
+func NewHandler(TeacherService TeacherService, validator *validation.Validator) *Handler {
 	return &Handler{
-		service: TeacherService,
+		service:   TeacherService,
+		validator: validator,
 	}
 
-}
-
-type ReqCreateTeacher struct {
-	Email     string `json:"email" db:"email"`
-	FirstName string `json:"first_name,omitempty" db:"first_name"`
-	LastName  string `json:"last_name,omitempty" db:"last_name"`
-	Class     string `json:"class,omitempty" db:"class"`
-	Subject   string `json:"subject,omitempty" db:"subject"`
-}
-
-var params = map[string]string{
-	"first_name": "first_name",
-	"last_name":  "last_name",
-	"subject":    "subject",
-	"class":      "class",
-}
-var allowedSortFields = map[string]bool{
-	"first_name": true,
-	"last_name":  true,
-	"class":      true,
-	"subject":    true,
-	"created_at": true,
-}
-
-var allowedFields = map[string]bool{
-	"first_name": true,
-	"last_name":  true,
-	"email":      true,
-	"class":      true,
-	"subject":    true,
 }

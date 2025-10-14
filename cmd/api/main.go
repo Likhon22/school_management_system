@@ -10,6 +10,7 @@ import (
 	"school-management-system/internal/config"
 	"school-management-system/internal/infra/db"
 	"school-management-system/internal/repository"
+	"school-management-system/internal/validation"
 	"school-management-system/pkg/utils"
 	"time"
 
@@ -30,9 +31,10 @@ func main() {
 	}
 	defer db.Close()
 	log.Info().Msg("database connected successfully")
+	validator := validation.NewValidator()
 	//teacher handler
 	teacherRepo := repository.NewTeacherRepo(db)
-	teacherHandler := teachers.NewHandler(teacherRepo)
+	teacherHandler := teachers.NewHandler(teacherRepo, validator)
 	mux := router.SetupRoutes(teacherHandler)
 
 	mw := middlewares.Middleware{

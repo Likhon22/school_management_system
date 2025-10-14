@@ -13,6 +13,10 @@ func (h *Handler) CREATE(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorHandler(w, err, "Error creating user", http.StatusInternalServerError)
 		return
 	}
+	if err := h.validator.ValidateStruct(reqTeacher); err != nil {
+		utils.ErrorHandler(w, err, "Validation failed", http.StatusBadRequest)
+		return
+	}
 
 	created, err := h.service.CREATE(r.Context(), models.Teacher{
 		FirstName: reqTeacher.FirstName,

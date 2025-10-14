@@ -170,3 +170,22 @@ func (tc *teacherRepo) Update(ctx context.Context, teacher map[string]interface{
 	}
 	return &updatedTeacher, nil
 }
+
+func (tc *teacherRepo) Delete(ctx context.Context, id int) error {
+	query := `DELETE FROM teachers WHERE id = $1`
+	res, err := tc.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("teacher not found")
+
+	}
+	return nil
+}

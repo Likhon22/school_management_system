@@ -10,4 +10,5 @@ type TeacherService interface {
 	CREATE(context.Context, models.Teacher) (*models.Teacher, error)
 	Get(context.Context, map[string]string, utils.SortOption) ([]*models.Teacher, error)
 	GetTeacherById(context.Context, int) (*models.Teacher, error)
+	Update(context.Context, map[string]interface{}, map[string]bool, int) (*models.Teacher, error)
 }

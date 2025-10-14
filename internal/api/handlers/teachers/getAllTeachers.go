@@ -8,19 +8,7 @@ import (
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 
-	params := map[string]string{
-		"first_name": "first_name",
-		"last_name":  "last_name",
-		"subject":    "subject",
-		"class":      "class",
-	}
-	allowedSortFields := map[string]bool{
-		"first_name": true,
-		"last_name":  true,
-		"class":      true,
-		"subject":    true,
-		"created_at": true,
-	}
+
 	filters := utils.BUildFilters(r, params)
 	sortOptions := utils.ParseSortQueryOptions(r, allowedSortFields, "created_at DESC")
 	teachers, err := h.service.Get(r.Context(), filters, sortOptions)

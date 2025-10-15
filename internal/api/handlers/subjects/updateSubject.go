@@ -1,4 +1,4 @@
-package students
+package subjects
 
 import (
 	"net/http"
@@ -7,13 +7,13 @@ import (
 )
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	var reqStudent ReqCreateStudent
-	if err := utils.ReadJson(w, r, &reqStudent); err != nil {
-		utils.ErrorHandler(w, err, "Error updating student", http.StatusInternalServerError)
+	var reqSubject ReqCreateSubject
+	if err := utils.ReadJson(w, r, &reqSubject); err != nil {
+		utils.ErrorHandler(w, err, "Error updating subject", http.StatusInternalServerError)
 		return
 	}
-	if err := utils.ReadJson(w, r, &reqStudent); err != nil {
-		utils.ErrorHandler(w, err, "Error updating student", http.StatusInternalServerError)
+	if err := utils.ReadJson(w, r, &reqSubject); err != nil {
+		utils.ErrorHandler(w, err, "Error updating subject", http.StatusInternalServerError)
 		return
 	}
 	id, err := strconv.Atoi(r.PathValue("id"))
@@ -22,10 +22,10 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updateMap := utils.StructToMap(reqStudent)
+	updateMap := utils.StructToMap(reqSubject)
 	updated, err := h.service.Update(r.Context(), updateMap, allowedFields, id)
 	if err != nil {
-		utils.ErrorHandler(w, err, "Error updating student", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error updating subject", http.StatusInternalServerError)
 		return
 	}
 
@@ -34,7 +34,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := utils.SendResponse(w, r, "student updated successfully", http.StatusOK, updated); err != nil {
-		utils.ErrorHandler(w, err, "Error updating student", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error updating subject", http.StatusInternalServerError)
 		return
 	}
 

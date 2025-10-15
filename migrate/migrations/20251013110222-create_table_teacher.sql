@@ -8,7 +8,9 @@ CREATE TABLE IF NOT EXISTS teachers (
     class VARCHAR(50),
     subject VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    subject_id INT REFERENCES subjects(id)
+    
 );
 CREATE INDEX IF NOT EXISTS idx_teachers_email ON teachers (email);
 

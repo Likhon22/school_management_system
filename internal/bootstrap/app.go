@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"school-management-system/internal/api/handlers/students"
+	"school-management-system/internal/api/handlers/subjects"
 	"school-management-system/internal/api/handlers/teachers"
 	"school-management-system/internal/api/middlewares"
 	"school-management-system/internal/api/router"
@@ -39,7 +40,12 @@ func NewApp(cnf *config.Config, dbCon *sql.DB) *App {
 	studentService := service.NewStudentService(studentRepo)
 	studentHandler := students.NewHandler(studentService, validator)
 
-	mux := router.SetupRoutes(teacherHandler, studentHandler)
+	//subject handler
+	subjectRepo := repository.NewSubjectRepo(dbCon)
+	subjectService := service.NewSubjectService(subjectRepo)
+	subjectHandler := subjects.NewHandler(subjectService, validator)
+
+	mux := router.SetupRoutes(teacherHandler, studentHandler, subjectHandler)
 
 	mw := &middlewares.Middleware{
 		IPLimiter: middlewares.NewIPLimiter(time.Minute/12, 5),

@@ -9,11 +9,11 @@ import (
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	var reqTeacher ReqCreateTeacher
 	if err := utils.ReadJson(w, r, &reqTeacher); err != nil {
-		utils.ErrorHandler(w, err, "Error updating user", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error updating teacher", http.StatusInternalServerError)
 		return
 	}
 	if err := utils.ReadJson(w, r, &reqTeacher); err != nil {
-		utils.ErrorHandler(w, err, "Error updating user", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error updating teacher", http.StatusInternalServerError)
 		return
 	}
 	id, err := strconv.Atoi(r.PathValue("id"))
@@ -25,7 +25,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	updateMap := utils.StructToMap(reqTeacher)
 	updated, err := h.service.Update(r.Context(), updateMap, allowedFields, id)
 	if err != nil {
-		utils.ErrorHandler(w, err, "Error updating user", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error updating teacher", http.StatusInternalServerError)
 		return
 	}
 
@@ -34,7 +34,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := utils.SendResponse(w, r, "teacher updated successfully", http.StatusOK, updated); err != nil {
-		utils.ErrorHandler(w, err, "Error updating user", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error updating teacher", http.StatusInternalServerError)
 		return
 	}
 

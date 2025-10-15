@@ -1,7 +1,7 @@
 -- +migrate Up
 -- write your UP migration SQL here
 
-CREATE TABLE IF NOT EXISTS subjects (
+CREATE TABLE IF NOT EXISTS class (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS subjects (
 
 -- +migrate Down
 -- write your DOWN migration SQL here
-DROP TABLE IF EXISTS subjects;
+DROP TABLE IF EXISTS class;

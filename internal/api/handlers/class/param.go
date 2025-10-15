@@ -1,4 +1,4 @@
-package subjects
+package class
 
 var params = map[string]string{
 	"name": "name",

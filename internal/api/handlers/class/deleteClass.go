@@ -1,4 +1,4 @@
-package subjects
+package class
 
 import (
 	"net/http"
@@ -17,16 +17,16 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.service.Delete(r.Context(), id)
 	if err != nil {
-		if err.Error() == "subject not found" {
+		if err.Error() == "class not found" {
 			utils.ErrorHandler(w, nil, err.Error(), http.StatusNotFound)
 		} else {
 
-			utils.ErrorHandler(w, err, "Error deleting subject", http.StatusInternalServerError)
+			utils.ErrorHandler(w, err, "Error deleting class", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	if err := utils.SendResponse[any](w, r, "subject deleted successfully", http.StatusOK, nil); err != nil {
+	if err := utils.SendResponse[any](w, r, "class deleted successfully", http.StatusOK, nil); err != nil {
 
 		utils.ErrorHandler(w, err, "Error giving response", http.StatusInternalServerError)
 		return

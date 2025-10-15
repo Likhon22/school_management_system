@@ -1,4 +1,4 @@
-package subjects
+package class
 
 import (
 	"school-management-system/internal/service"
@@ -6,11 +6,11 @@ import (
 )
 
 type Handler struct {
-	service   service.SubjectService
+	service   service.ClassService
 	validator *validation.Validator
 }
 
-func NewHandler(service service.SubjectService, validator *validation.Validator) *Handler {
+func NewHandler(service service.ClassService, validator *validation.Validator) *Handler {
 	return &Handler{
 		service:   service,
 		validator: validator,

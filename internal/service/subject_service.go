@@ -7,37 +7,37 @@ import (
 	"school-management-system/pkg/utils"
 )
 
-type subjectService struct {
-	repo repository.SubjectRepo
+type classService struct {
+	repo repository.ClassRepo
 }
-type SubjectService interface {
-	Create(context.Context, models.Subject) (*models.Subject, error)
-	Get(context.Context, map[string]string, utils.SortOption) ([]*models.Subject, error)
-	GetSubjectById(context.Context, int) (*models.Subject, error)
-	Update(context.Context, map[string]interface{}, map[string]bool, int) (*models.Subject, error)
+type ClassService interface {
+	Create(context.Context, models.Class) (*models.Class, error)
+	Get(context.Context, map[string]string, utils.SortOption) ([]*models.Class, error)
+	GetClassById(context.Context, int) (*models.Class, error)
+	Update(context.Context, map[string]interface{}, map[string]bool, int) (*models.Class, error)
 	Delete(ctx context.Context, id int) error
 }
 
-func NewSubjectService(repo repository.SubjectRepo) SubjectService {
-	return &subjectService{
+func NewClassService(repo repository.ClassRepo) ClassService {
+	return &classService{
 		repo: repo,
 	}
 
 }
 
-func (s *subjectService) Create(ctx context.Context, subject models.Subject) (*models.Subject, error) {
-	return s.repo.Create(ctx, subject)
+func (s *classService) Create(ctx context.Context, class models.Class) (*models.Class, error) {
+	return s.repo.Create(ctx, class)
 }
 
-func (s *subjectService) Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Subject, error) {
+func (s *classService) Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Class, error) {
 	return s.repo.Get(ctx, filters, sort)
 }
-func (s *subjectService) GetSubjectById(ctx context.Context, id int) (*models.Subject, error) {
-	return s.repo.GetSubjectById(ctx, id)
+func (s *classService) GetClassById(ctx context.Context, id int) (*models.Class, error) {
+	return s.repo.GetClassById(ctx, id)
 }
-func (s *subjectService) Update(ctx context.Context, subject map[string]interface{}, allowedFields map[string]bool, id int) (*models.Subject, error) {
-	return s.repo.Update(ctx, subject, allowedFields, id)
+func (s *classService) Update(ctx context.Context, class map[string]interface{}, allowedFields map[string]bool, id int) (*models.Class, error) {
+	return s.repo.Update(ctx, class, allowedFields, id)
 }
-func (s *subjectService) Delete(ctx context.Context, id int) error {
+func (s *classService) Delete(ctx context.Context, id int) error {
 	return s.repo.Delete(ctx, id)
 }

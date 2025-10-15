@@ -6,11 +6,11 @@ import (
 	"school-management-system/pkg/utils"
 )
 
-func (h *Handler) CREATE(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var reqTeacher ReqCreateTeacher
 	if err := utils.ReadJson(w, r, &reqTeacher); err != nil {
 
-		utils.ErrorHandler(w, err, "Error creating user", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error creating teacher", http.StatusInternalServerError)
 		return
 	}
 	if err := h.validator.ValidateStruct(reqTeacher); err != nil {
@@ -18,7 +18,7 @@ func (h *Handler) CREATE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	created, err := h.service.CREATE(r.Context(), models.Teacher{
+	created, err := h.service.Create(r.Context(), models.Teacher{
 		FirstName: reqTeacher.FirstName,
 		LastName:  reqTeacher.LastName,
 		Email:     reqTeacher.Email,
@@ -27,12 +27,12 @@ func (h *Handler) CREATE(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 
-		utils.ErrorHandler(w, err, "Error creating user", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error creating teacher", http.StatusInternalServerError)
 		return
 	}
 	if err := utils.SendResponse(w, r, "teacher created successfully", http.StatusCreated, created); err != nil {
 
-		utils.ErrorHandler(w, err, "Error creating user", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "Error creating teacher", http.StatusInternalServerError)
 		return
 	}
 

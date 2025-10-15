@@ -12,8 +12,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorHandler(w, err, "Error updating user", http.StatusInternalServerError)
 		return
 	}
-	if err := h.validator.ValidateStruct(reqTeacher); err != nil {
-		utils.ErrorHandler(w, err, "Validation failed", http.StatusBadRequest)
+	if err := utils.ReadJson(w, r, &reqTeacher); err != nil {
+		utils.ErrorHandler(w, err, "Error updating user", http.StatusInternalServerError)
 		return
 	}
 	id, err := strconv.Atoi(r.PathValue("id"))

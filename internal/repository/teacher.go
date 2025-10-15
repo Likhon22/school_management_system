@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"school-management-system/internal/api/handlers/teachers"
 	"school-management-system/internal/models"
 	"school-management-system/pkg/utils"
 	"strings"
@@ -15,7 +14,11 @@ type teacherRepo struct {
 	db *sql.DB
 }
 type TeacherRepo interface {
-	teachers.TeacherService
+	Create(context.Context, models.Teacher) (*models.Teacher, error)
+	Get(context.Context, map[string]string, utils.SortOption) ([]*models.Teacher, error)
+	GetTeacherById(context.Context, int) (*models.Teacher, error)
+	Update(context.Context, map[string]interface{}, map[string]bool, int) (*models.Teacher, error)
+	Delete(ctx context.Context, id int) error
 }
 
 func NewTeacherRepo(db *sql.DB) TeacherRepo {
@@ -24,7 +27,7 @@ func NewTeacherRepo(db *sql.DB) TeacherRepo {
 	}
 
 }
-func (tc *teacherRepo) CREATE(ctx context.Context, teacher models.Teacher) (*models.Teacher, error) {
+func (repo *teacherRepo) Create(ctx context.Context, teacher models.Teacher) (*models.Teacher, error) {
 	query := `
 INSERT INTO teachers (
     first_name, 
@@ -39,7 +42,7 @@ RETURNING id, first_name, last_name, email, class, subject, created_at, updated_
 
 	createdTeacher := &models.Teacher{}
 
-	err := tc.db.QueryRowContext(
+	err := repo.db.QueryRowContext(
 		ctx,
 		query,
 		teacher.FirstName,
@@ -65,13 +68,13 @@ RETURNING id, first_name, last_name, email, class, subject, created_at, updated_
 	return createdTeacher, nil
 }
 
-func (tc *teacherRepo) Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Teacher, error) {
+func (repo *teacherRepo) Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Teacher, error) {
 
 	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM teachers`
 	filteredQuery, args := utils.BuildFilteredQuery(query, filters, true)
 	finalQuery := filteredQuery + utils.BuildSortQuery(sort)
 	log.Println(finalQuery)
-	rows, err := tc.db.QueryContext(ctx, finalQuery, args...)
+	rows, err := repo.db.QueryContext(ctx, finalQuery, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,11 +106,11 @@ func (tc *teacherRepo) Get(ctx context.Context, filters map[string]string, sort 
 	return teachers, nil
 }
 
-func (tc *teacherRepo) GetTeacherById(ctx context.Context, id int) (*models.Teacher, error) {
+func (repo *teacherRepo) GetTeacherById(ctx context.Context, id int) (*models.Teacher, error) {
 	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM teachers WHERE id = $1`
 
 	teacher := &models.Teacher{}
-	err := tc.db.QueryRowContext(ctx, query, id).Scan(
+	err := repo.db.QueryRowContext(ctx, query, id).Scan(
 		&teacher.ID,
 		&teacher.FirstName,
 		&teacher.LastName,
@@ -128,7 +131,7 @@ func (tc *teacherRepo) GetTeacherById(ctx context.Context, id int) (*models.Teac
 	return teacher, nil
 }
 
-func (tc *teacherRepo) Update(ctx context.Context, teacher map[string]interface{}, allowedFields map[string]bool, id int) (*models.Teacher, error) {
+func (repo *teacherRepo) Update(ctx context.Context, teacher map[string]interface{}, allowedFields map[string]bool, id int) (*models.Teacher, error) {
 	if len(teacher) == 0 {
 		return nil, nil
 
@@ -153,7 +156,7 @@ func (tc *teacherRepo) Update(ctx context.Context, teacher map[string]interface{
 	args = append(args, id)
 	query := fmt.Sprintf(`UPDATE teachers SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, first_name, last_name, email, class, subject, created_at, updated_at`, strings.Join(setClauses, ", "), argsPos)
 	var updatedTeacher models.Teacher
-	err := tc.db.QueryRowContext(ctx, query, args...).Scan(
+	err := repo.db.QueryRowContext(ctx, query, args...).Scan(
 		&updatedTeacher.ID,
 		&updatedTeacher.FirstName,
 		&updatedTeacher.LastName,
@@ -171,9 +174,9 @@ func (tc *teacherRepo) Update(ctx context.Context, teacher map[string]interface{
 	return &updatedTeacher, nil
 }
 
-func (tc *teacherRepo) Delete(ctx context.Context, id int) error {
+func (repo *teacherRepo) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM teachers WHERE id = $1`
-	res, err := tc.db.ExecContext(ctx, query, id)
+	res, err := repo.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 

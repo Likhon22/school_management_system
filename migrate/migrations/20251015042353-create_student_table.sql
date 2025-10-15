@@ -1,20 +1,16 @@
 -- +migrate Up
--- write your UP migration SQL here
 CREATE TABLE IF NOT EXISTS students (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
-    class VARCHAR(50),
+    class_id INT REFERENCES class(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    class_id INT REFERENCES class(id)
-  
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
+
 CREATE INDEX IF NOT EXISTS idx_students_email ON students (email);
 
 -- +migrate Down
--- write your DOWN migration SQL here
-
 DROP INDEX IF EXISTS idx_students_email;
 DROP TABLE IF EXISTS students;

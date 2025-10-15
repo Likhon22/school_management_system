@@ -1,6 +1,4 @@
 -- +migrate Up
--- write your UP migration SQL here
-
 CREATE TABLE IF NOT EXISTS class (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL,
@@ -9,5 +7,4 @@ CREATE TABLE IF NOT EXISTS class (
 );
 
 -- +migrate Down
--- write your DOWN migration SQL here
 DROP TABLE IF EXISTS class;

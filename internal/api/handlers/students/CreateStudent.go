@@ -1,9 +1,12 @@
 package students
 
 import (
+	"fmt"
 	"net/http"
 	"school-management-system/internal/models"
 	"school-management-system/pkg/utils"
+
+	"github.com/lib/pq"
 )
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
@@ -22,13 +25,18 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		FirstName: reqStudent.FirstName,
 		LastName:  reqStudent.LastName,
 		Email:     reqStudent.Email,
-		Class:     reqStudent.Class,
+		ClassID:   reqStudent.ClassID,
 	})
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23503" {
+			utils.ErrorHandler(w, err, fmt.Sprintf("class with id %d does not exist", reqStudent.ClassID), http.StatusBadRequest)
+			return
 
+		}
 		utils.ErrorHandler(w, err, "Error creating student", http.StatusInternalServerError)
 		return
 	}
+
 	if err := utils.SendResponse(w, r, "student created successfully", http.StatusCreated, created); err != nil {
 
 		utils.ErrorHandler(w, err, "Error creating student", http.StatusInternalServerError)

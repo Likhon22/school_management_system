@@ -26,7 +26,6 @@ func NewStudentRepo(db *sql.DB) StudentRepo {
 	return &studentRepo{
 		db: db,
 	}
-
 }
 
 func (repo *studentRepo) Create(ctx context.Context, student models.Student) (*models.Student, error) {
@@ -35,11 +34,10 @@ INSERT INTO students (
     first_name, 
     last_name, 
     email, 
-    class 
-    
+    class_id
 ) 
 VALUES ($1, $2, $3, $4)
-RETURNING id, first_name, last_name, email, class , created_at, updated_at
+RETURNING id, first_name, last_name, email, class_id, created_at, updated_at
 `
 
 	createdStudent := &models.Student{}
@@ -50,18 +48,19 @@ RETURNING id, first_name, last_name, email, class , created_at, updated_at
 		student.FirstName,
 		student.LastName,
 		student.Email,
-		student.Class,
+		student.ClassID,
 	).Scan(
 		&createdStudent.ID,
 		&createdStudent.FirstName,
 		&createdStudent.LastName,
 		&createdStudent.Email,
-		&createdStudent.Class,
+		&createdStudent.ClassID,
 		&createdStudent.CreatedAt,
 		&createdStudent.UpdatedAt,
 	)
 
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -70,7 +69,7 @@ RETURNING id, first_name, last_name, email, class , created_at, updated_at
 
 func (repo *studentRepo) Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Student, error) {
 
-	query := `SELECT id, first_name, last_name, email, class, created_at, updated_at FROM students`
+	query := `SELECT id, first_name, last_name, email, class_id, created_at, updated_at FROM students`
 	filteredQuery, args := utils.BuildFilteredQuery(query, filters, true)
 	finalQuery := filteredQuery + utils.BuildSortQuery(sort)
 	log.Println(finalQuery)
@@ -89,7 +88,7 @@ func (repo *studentRepo) Get(ctx context.Context, filters map[string]string, sor
 			&s.FirstName,
 			&s.LastName,
 			&s.Email,
-			&s.Class,
+			&s.ClassID,
 			&s.CreatedAt,
 			&s.UpdatedAt,
 		); err != nil {
@@ -106,7 +105,7 @@ func (repo *studentRepo) Get(ctx context.Context, filters map[string]string, sor
 }
 
 func (repo *studentRepo) GetStudentById(ctx context.Context, id int) (*models.Student, error) {
-	query := `SELECT id, first_name, last_name, email, class, created_at, updated_at FROM students WHERE id = $1`
+	query := `SELECT id, first_name, last_name, email, class_id, created_at, updated_at FROM students WHERE id = $1`
 
 	student := &models.Student{}
 	err := repo.db.QueryRowContext(ctx, query, id).Scan(
@@ -114,13 +113,12 @@ func (repo *studentRepo) GetStudentById(ctx context.Context, id int) (*models.St
 		&student.FirstName,
 		&student.LastName,
 		&student.Email,
-		&student.Class,
+		&student.ClassID,
 		&student.CreatedAt,
 		&student.UpdatedAt,
 	)
 
 	if err == sql.ErrNoRows {
-
 		return nil, nil
 	} else if err != nil {
 		return nil, err
@@ -132,42 +130,43 @@ func (repo *studentRepo) GetStudentById(ctx context.Context, id int) (*models.St
 func (repo *studentRepo) Update(ctx context.Context, student map[string]interface{}, allowedFields map[string]bool, id int) (*models.Student, error) {
 	if len(student) == 0 {
 		return nil, nil
-
 	}
+
 	args := []interface{}{}
 	argsPos := 1
 	setClauses := []string{}
 	for k, v := range student {
-
 		if allowedFields[k] {
 			setClauses = append(setClauses, fmt.Sprintf("%s=$%d", k, argsPos))
 			args = append(args, v)
-
 			argsPos++
 		}
-
 	}
+
 	if len(setClauses) == 0 {
 		return nil, nil
-
 	}
+
 	args = append(args, id)
-	query := fmt.Sprintf(`UPDATE students SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, first_name, last_name, email, class,  created_at, updated_at`, strings.Join(setClauses, ", "), argsPos)
+	query := fmt.Sprintf(`UPDATE students SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, first_name, last_name, email, class_id, created_at, updated_at`, strings.Join(setClauses, ", "), argsPos)
+
 	var updatedStudent models.Student
 	err := repo.db.QueryRowContext(ctx, query, args...).Scan(
 		&updatedStudent.ID,
 		&updatedStudent.FirstName,
 		&updatedStudent.LastName,
 		&updatedStudent.Email,
-		&updatedStudent.Class,
+		&updatedStudent.ClassID,
 		&updatedStudent.CreatedAt,
 		&updatedStudent.UpdatedAt,
 	)
+
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {
 		return nil, err
 	}
+
 	return &updatedStudent, nil
 }
 
@@ -176,16 +175,16 @@ func (repo *studentRepo) Delete(ctx context.Context, id int) error {
 	res, err := repo.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
-
 	}
+
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
 		return err
-
 	}
+
 	if rowsAffected == 0 {
 		return fmt.Errorf("student not found")
-
 	}
+
 	return nil
 }

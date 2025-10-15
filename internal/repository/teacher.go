@@ -13,6 +13,7 @@ import (
 type teacherRepo struct {
 	db *sql.DB
 }
+
 type TeacherRepo interface {
 	Create(context.Context, models.Teacher) (*models.Teacher, error)
 	Get(context.Context, map[string]string, utils.SortOption) ([]*models.Teacher, error)
@@ -25,19 +26,19 @@ func NewTeacherRepo(db *sql.DB) TeacherRepo {
 	return &teacherRepo{
 		db: db,
 	}
-
 }
+
 func (repo *teacherRepo) Create(ctx context.Context, teacher models.Teacher) (*models.Teacher, error) {
 	query := `
 INSERT INTO teachers (
     first_name, 
     last_name, 
     email, 
-    class, 
+    class_id, 
     subject
 ) 
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, first_name, last_name, email, class, subject, created_at, updated_at
+RETURNING id, first_name, last_name, email, class_id, subject, created_at, updated_at
 `
 
 	createdTeacher := &models.Teacher{}
@@ -48,20 +49,21 @@ RETURNING id, first_name, last_name, email, class, subject, created_at, updated_
 		teacher.FirstName,
 		teacher.LastName,
 		teacher.Email,
-		teacher.Class,
+		teacher.ClassID, // fixed
 		teacher.Subject,
 	).Scan(
 		&createdTeacher.ID,
 		&createdTeacher.FirstName,
 		&createdTeacher.LastName,
 		&createdTeacher.Email,
-		&createdTeacher.Class,
+		&createdTeacher.ClassID, // fixed
 		&createdTeacher.Subject,
 		&createdTeacher.CreatedAt,
 		&createdTeacher.UpdatedAt,
 	)
 
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -69,8 +71,7 @@ RETURNING id, first_name, last_name, email, class, subject, created_at, updated_
 }
 
 func (repo *teacherRepo) Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Teacher, error) {
-
-	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM teachers`
+	query := `SELECT id, first_name, last_name, email, class_id, subject, created_at, updated_at FROM teachers`
 	filteredQuery, args := utils.BuildFilteredQuery(query, filters, true)
 	finalQuery := filteredQuery + utils.BuildSortQuery(sort)
 	log.Println(finalQuery)
@@ -89,7 +90,7 @@ func (repo *teacherRepo) Get(ctx context.Context, filters map[string]string, sor
 			&t.FirstName,
 			&t.LastName,
 			&t.Email,
-			&t.Class,
+			&t.ClassID, // fixed
 			&t.Subject,
 			&t.CreatedAt,
 			&t.UpdatedAt,
@@ -107,7 +108,7 @@ func (repo *teacherRepo) Get(ctx context.Context, filters map[string]string, sor
 }
 
 func (repo *teacherRepo) GetTeacherById(ctx context.Context, id int) (*models.Teacher, error) {
-	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM teachers WHERE id = $1`
+	query := `SELECT id, first_name, last_name, email, class_id, subject, created_at, updated_at FROM teachers WHERE id = $1`
 
 	teacher := &models.Teacher{}
 	err := repo.db.QueryRowContext(ctx, query, id).Scan(
@@ -115,14 +116,13 @@ func (repo *teacherRepo) GetTeacherById(ctx context.Context, id int) (*models.Te
 		&teacher.FirstName,
 		&teacher.LastName,
 		&teacher.Email,
-		&teacher.Class,
+		&teacher.ClassID, // fixed
 		&teacher.Subject,
 		&teacher.CreatedAt,
 		&teacher.UpdatedAt,
 	)
 
 	if err == sql.ErrNoRows {
-
 		return nil, nil
 	} else if err != nil {
 		return nil, err
@@ -134,34 +134,32 @@ func (repo *teacherRepo) GetTeacherById(ctx context.Context, id int) (*models.Te
 func (repo *teacherRepo) Update(ctx context.Context, teacher map[string]interface{}, allowedFields map[string]bool, id int) (*models.Teacher, error) {
 	if len(teacher) == 0 {
 		return nil, nil
-
 	}
+
 	args := []interface{}{}
 	argsPos := 1
 	setClauses := []string{}
 	for k, v := range teacher {
-
 		if allowedFields[k] {
 			setClauses = append(setClauses, fmt.Sprintf("%s=$%d", k, argsPos))
 			args = append(args, v)
-
 			argsPos++
 		}
-
 	}
+
 	if len(setClauses) == 0 {
 		return nil, nil
-
 	}
+
 	args = append(args, id)
-	query := fmt.Sprintf(`UPDATE teachers SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, first_name, last_name, email, class, subject, created_at, updated_at`, strings.Join(setClauses, ", "), argsPos)
+	query := fmt.Sprintf(`UPDATE teachers SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, first_name, last_name, email, class_id, subject, created_at, updated_at`, strings.Join(setClauses, ", "), argsPos)
 	var updatedTeacher models.Teacher
 	err := repo.db.QueryRowContext(ctx, query, args...).Scan(
 		&updatedTeacher.ID,
 		&updatedTeacher.FirstName,
 		&updatedTeacher.LastName,
 		&updatedTeacher.Email,
-		&updatedTeacher.Class,
+		&updatedTeacher.ClassID, // fixed
 		&updatedTeacher.Subject,
 		&updatedTeacher.CreatedAt,
 		&updatedTeacher.UpdatedAt,
@@ -179,16 +177,13 @@ func (repo *teacherRepo) Delete(ctx context.Context, id int) error {
 	res, err := repo.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
-
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
 		return err
-
 	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("teacher not found")
-
 	}
 	return nil
 }

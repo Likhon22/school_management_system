@@ -35,10 +35,10 @@ INSERT INTO students (
     first_name, 
     last_name, 
     email, 
-    class, 
-    subject
+    class 
+    
 ) 
-VALUES ($1, $2, $3, $4, $5)
+VALUES ($1, $2, $3, $4)
 RETURNING id, first_name, last_name, email, class , created_at, updated_at
 `
 
@@ -70,7 +70,7 @@ RETURNING id, first_name, last_name, email, class , created_at, updated_at
 
 func (repo *studentRepo) Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Student, error) {
 
-	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM students`
+	query := `SELECT id, first_name, last_name, email, class, created_at, updated_at FROM students`
 	filteredQuery, args := utils.BuildFilteredQuery(query, filters, true)
 	finalQuery := filteredQuery + utils.BuildSortQuery(sort)
 	log.Println(finalQuery)
@@ -106,7 +106,7 @@ func (repo *studentRepo) Get(ctx context.Context, filters map[string]string, sor
 }
 
 func (repo *studentRepo) GetStudentById(ctx context.Context, id int) (*models.Student, error) {
-	query := `SELECT id, first_name, last_name, email, class, subject, created_at, updated_at FROM students WHERE id = $1`
+	query := `SELECT id, first_name, last_name, email, class, created_at, updated_at FROM students WHERE id = $1`
 
 	student := &models.Student{}
 	err := repo.db.QueryRowContext(ctx, query, id).Scan(
@@ -152,7 +152,7 @@ func (repo *studentRepo) Update(ctx context.Context, student map[string]interfac
 
 	}
 	args = append(args, id)
-	query := fmt.Sprintf(`UPDATE students SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, first_name, last_name, email, class, subject, created_at, updated_at`, strings.Join(setClauses, ", "), argsPos)
+	query := fmt.Sprintf(`UPDATE students SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, first_name, last_name, email, class,  created_at, updated_at`, strings.Join(setClauses, ", "), argsPos)
 	var updatedStudent models.Student
 	err := repo.db.QueryRowContext(ctx, query, args...).Scan(
 		&updatedStudent.ID,

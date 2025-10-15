@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,7 +10,6 @@ import (
 	"school-management-system/internal/api/middlewares"
 	"school-management-system/internal/api/router"
 	"school-management-system/internal/config"
-	"school-management-system/internal/infra/db"
 	"school-management-system/internal/repository"
 	"school-management-system/internal/service"
 	"school-management-system/internal/validation"
@@ -23,27 +23,19 @@ type App struct {
 	server *http.Server
 }
 
-func NewApp() *App {
-	cnf := config.GetConfig()
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-	db, err := db.ConnectDB(cnf.DBCnf)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("db connection fail")
-		os.Exit(1)
+func NewApp(cnf *config.Config, dbCon *sql.DB) *App {
 
-	}
-	defer db.Close()
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+
 	log.Info().Msg("database connected successfully")
 	validator := validation.NewValidator()
 	//teacher handler
-	teacherRepo := repository.NewTeacherRepo(db)
+	teacherRepo := repository.NewTeacherRepo(dbCon)
 	teacherService := service.NewTeacherService(teacherRepo)
 	teacherHandler := teachers.NewHandler(teacherService, validator)
 
 	//student handler
-	studentRepo := repository.NewStudentRepo(db)
+	studentRepo := repository.NewStudentRepo(dbCon)
 	studentService := service.NewStudentService(studentRepo)
 	studentHandler := students.NewHandler(studentService, validator)
 

@@ -18,6 +18,7 @@ type TeacherRepo interface {
 	Create(context.Context, models.Teacher) (*models.Teacher, error)
 	Get(context.Context, map[string]string, utils.SortOption) ([]*models.Teacher, error)
 	GetTeacherById(context.Context, int) (*models.Teacher, error)
+	GetStudentsByTeacherID(ctx context.Context, id int) (*models.TeacherWithStudents, error)
 	Update(context.Context, map[string]interface{}, map[string]bool, int) (*models.Teacher, error)
 	Delete(ctx context.Context, id int) error
 }
@@ -186,4 +187,45 @@ func (repo *teacherRepo) Delete(ctx context.Context, id int) error {
 		return fmt.Errorf("teacher not found")
 	}
 	return nil
+}
+
+func (repo *teacherRepo) GetStudentsByTeacherID(ctx context.Context, id int) (*models.TeacherWithStudents, error) {
+	query := `SELECT 
+    t.id AS teacher_id,
+    t.first_name AS teacher_first_name,
+    t.last_name AS teacher_last_name,
+    t.email AS teacher_email,
+    s.id AS student_id,
+    s.first_name AS student_first_name,
+    s.last_name AS student_last_name,
+    s.email AS student_email,
+    s.class_id
+FROM teachers t
+JOIN students s ON s.class_id = t.class_id
+WHERE t.id = $1;
+`
+
+	rows, err := repo.db.QueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	teacher := &models.TeacherWithStudents{
+		Students: []*models.Student{},
+	}
+
+	for rows.Next() {
+		var s models.Student
+		if err := rows.Scan(
+			&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email,
+			&s.ID, &s.FirstName, &s.LastName, &s.Email, &s.ClassID,
+		); err != nil {
+			return nil, err
+		}
+		teacher.Students = append(teacher.Students, &s)
+	}
+	teacher.TotalStudents = len(teacher.Students)
+
+	return teacher, rows.Err()
 }

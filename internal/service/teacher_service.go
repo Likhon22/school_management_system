@@ -11,6 +11,7 @@ type TeacherService interface {
 	Create(context.Context, models.Teacher) (*models.Teacher, error)
 	Get(context.Context, map[string]string, utils.SortOption) ([]*models.Teacher, error)
 	GetTeacherById(context.Context, int) (*models.Teacher, error)
+	GetStudentsByTeacherID(ctx context.Context, id int) (*models.TeacherWithStudents, error)
 	Update(context.Context, map[string]interface{}, map[string]bool, int) (*models.Teacher, error)
 	Delete(ctx context.Context, id int) error
 }
@@ -41,4 +42,7 @@ func (s *teacherService) Update(ctx context.Context, teacher map[string]interfac
 }
 func (s *teacherService) Delete(ctx context.Context, id int) error {
 	return s.repo.Delete(ctx, id)
+}
+func (s *teacherService) GetStudentsByTeacherID(ctx context.Context, id int) (*models.TeacherWithStudents, error) {
+	return s.repo.GetStudentsByTeacherID(ctx, id)
 }

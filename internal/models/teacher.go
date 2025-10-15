@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Teacher struct {
 	ID        int       `json:"id" db:"id"`
@@ -11,4 +13,13 @@ type Teacher struct {
 	Subject   string    `json:"subject,omitempty" db:"subject"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
+type TeacherWithStudents struct {
+	ID            int
+	FirstName     string
+	LastName      string
+	Email         string
+	Students      []*Student
+	TotalStudents int
 }

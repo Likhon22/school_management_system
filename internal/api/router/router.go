@@ -21,5 +21,7 @@ func SetupRoutes(teacherHandler *teachers.Handler, studentHandler *students.Hand
 	//subject routes
 	classHandler.ClassRoutes(mux)
 
+	// exec routes
+
 	return mux
 }

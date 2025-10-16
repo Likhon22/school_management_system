@@ -33,3 +33,21 @@ func (aw *AuthMiddleware) Jwt(next http.Handler) http.Handler {
 	})
 
 }
+
+func (aw *AuthMiddleware) RequiredRoles(allowedRoles ...string) func(http.Handler) http.Handler {
+	roleMap := make(map[string]bool, len(allowedRoles))
+	for _, r := range allowedRoles {
+		roleMap[r] = true
+	}
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			role, ok := r.Context().Value(contextkeys.RoleKey).(string)
+			if !ok || !roleMap[role] {
+				http.Error(w, "Forbidden: insufficient role", http.StatusForbidden)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}

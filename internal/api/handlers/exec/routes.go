@@ -3,10 +3,11 @@ package exec
 import (
 	"net/http"
 	"school-management-system/internal/api/middlewares"
+	"school-management-system/internal/models"
 )
 
-func (h *Handler) ExecsRoutes(mux *http.ServeMux, authMiddleware *middlewares.AuthMiddleware) {
-	mux.Handle("GET /execs", authMiddleware.Jwt(http.HandlerFunc(h.Get)))
+func (h *Handler) ExecsRoutes(mux *http.ServeMux, amw *middlewares.AuthMiddleware) {
+	mux.Handle("GET /execs", amw.Jwt(amw.RequiredRoles(string(models.RoleAdmin))(http.HandlerFunc(h.Get))))
 	mux.HandleFunc("POST /execs", h.Create)
 	mux.HandleFunc("GET /execs/{id}", h.GetExecById)
 	mux.HandleFunc("PATCH /execs/{id}", h.Update)

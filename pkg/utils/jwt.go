@@ -41,12 +41,14 @@ func SignedToken(userId int, email, username, role, jwt_secret string, jwt_expir
 
 func ValidateToken(tokenStr, jwtSecret string) (*jwt.Token, error) {
 
-	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &MyClaims{}, func(t *jwt.Token) (any, error) {
 		return ([]byte(jwtSecret)), nil
 	})
+
 	if err != nil {
 		return nil, err
 
 	}
+
 	return token, nil
 }

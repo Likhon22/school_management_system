@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"school-management-system/internal/models"
 	"school-management-system/pkg/utils"
 	"strings"
@@ -80,8 +79,6 @@ func (repo *execRepo) Get(ctx context.Context, filters map[string]string, sort u
 	query := `SELECT id, first_name, last_name, email, username, password, role, password_changed_at, password_reset_token, password_reset_token_expire, created_at, updated_at FROM execs`
 	filteredQuery, args := utils.BuildFilteredQuery(query, filters, true)
 	finalQuery := filteredQuery + utils.BuildSortQuery(sort)
-
-	log.Println(finalQuery)
 
 	rows, err := repo.db.QueryContext(ctx, finalQuery, args...)
 	if err != nil {

@@ -28,7 +28,10 @@ type App struct {
 func NewApp(cnf *config.Config, dbCon *sql.DB) *App {
 
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-
+	mw := &middlewares.Middleware{
+		IPLimiter: middlewares.NewIPLimiter(time.Minute/12, 5),
+	}
+	authMiddleware := mw.Jwt(cnf.JwtCnf.JwtSecret)
 	log.Info().Msg("database connected successfully")
 	validator := validation.NewValidator()
 	//teacher handler
@@ -49,11 +52,7 @@ func NewApp(cnf *config.Config, dbCon *sql.DB) *App {
 	execRepo := repository.NewExecRepo(dbCon)
 	execService := service.NewExecService(execRepo, cnf.JwtCnf.JwtSecret, cnf.JwtCnf.JwtExpires)
 	execHandler := exec.NewHandler(execService, validator)
-	mux := router.SetupRoutes(teacherHandler, studentHandler, classHandler, execHandler)
-
-	mw := &middlewares.Middleware{
-		IPLimiter: middlewares.NewIPLimiter(time.Minute/12, 5),
-	}
+	mux := router.SetupRoutes(teacherHandler, studentHandler, classHandler, execHandler, authMiddleware)
 
 	wrappedMux := middlewares.SetupMiddlewares(mux, mw)
 	server := &http.Server{

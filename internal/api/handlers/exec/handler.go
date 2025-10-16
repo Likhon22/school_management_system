@@ -1,7 +1,6 @@
 package exec
 
 import (
-	"net/http"
 	"school-management-system/internal/service"
 	"school-management-system/internal/validation"
 )
@@ -15,7 +14,4 @@ func NewHandler(service service.ExecService, validator *validation.Validator) *H
 	return &Handler{
 		service: service, validator: validator,
 	}
-}
-func (h *Handler) CREATE(w http.ResponseWriter, r *http.Request) {
-
 }

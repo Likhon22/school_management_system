@@ -26,6 +26,7 @@ func NewStudentService(repo repository.StudentRepo) StudentService {
 
 }
 func (s *studentService) Create(ctx context.Context, student models.Student) (*models.Student, error) {
+	
 	return s.repo.Create(ctx, student)
 }
 

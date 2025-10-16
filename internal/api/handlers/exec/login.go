@@ -2,8 +2,10 @@ package exec
 
 import (
 	"net/http"
+	"school-management-system/internal/models"
 	"school-management-system/internal/service"
 	"school-management-system/pkg/utils"
+	"time"
 )
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +20,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	info, err := h.service.Login(r.Context(), reqLoginExec.Email, reqLoginExec.Password)
+	info, token, err := h.service.Login(r.Context(), reqLoginExec.Email, reqLoginExec.Password)
+	type LoginResponse struct {
+		*models.ResExec        // embed the existing user struct
+		Token           string `json:"token"` // add token field
+	}
+
 	if err != nil {
 		switch err {
 		case service.ErrExecNotFound, service.ErrPasswordInvalid:
@@ -30,7 +37,19 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	if err := utils.SendResponse(w, r, "login successfully", http.StatusCreated, info); err != nil {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(1 * time.Hour),
+	})
+	resp := LoginResponse{
+		ResExec: info,
+		Token:   token, // include token just for learning
+	}
+	if err := utils.SendResponse(w, r, "login successfully", http.StatusCreated, &resp); err != nil {
 		utils.ErrorHandler(w, err, "Error sending response", http.StatusInternalServerError)
 		return
 	}

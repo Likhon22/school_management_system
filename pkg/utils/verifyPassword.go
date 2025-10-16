@@ -30,6 +30,10 @@ func VerifyPassword(password, encodedHash string) (bool, error) {
 	// Recompute the hash using the same salt
 	computedHash := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, uint32(len(storedHash)))
 
+	if len(computedHash) != len(storedHash) {
+		return false, nil
+
+	}
 	// Compare in constant time
 	if subtle.ConstantTimeCompare(storedHash, computedHash) == 1 {
 		return true, nil

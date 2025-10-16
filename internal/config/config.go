@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
@@ -16,11 +17,16 @@ type DBConfig struct {
 	MaxIdleConns int
 	MaxIdleTime  string
 }
+type JwtConfig struct {
+	JwtSecret  string
+	JwtExpires time.Duration
+}
 type Config struct {
 	Version     string
 	ServiceName string
 	HttpPort    string
 	DBCnf       DBConfig
+	JwtCnf      JwtConfig
 }
 
 func loadConfig() {
@@ -42,11 +48,16 @@ func loadConfig() {
 		log.Error().Msg("Invalid DB_MAX_OPEN_CONNS value; must be an integer")
 		os.Exit(1)
 	}
-
 	dbMaxIdleConns, err := strconv.Atoi(dbMaxIdleConnsStr)
 	if err != nil {
 		log.Error().Msg("Invalid DB_MAX_IDLE_CONNS value; must be an integer")
 		os.Exit(1)
+	}
+	jwtSecret := os.Getenv("JWT_SECRET")
+	jwtExpireStr := os.Getenv("JWT_EXPIRES")
+	jwtExpire, err := time.ParseDuration(jwtExpireStr)
+	if err != nil {
+		log.Error().Msg("invalid duration")
 	}
 	config = &Config{
 		Version:     version,
@@ -57,6 +68,10 @@ func loadConfig() {
 			MaxOpenConns: dbMaxOpenConns,
 			MaxIdleConns: dbMaxIdleConns,
 			MaxIdleTime:  dbMaxIdleTime,
+		},
+		JwtCnf: JwtConfig{
+			JwtSecret:  jwtSecret,
+			JwtExpires: jwtExpire,
 		},
 	}
 	if config.DBCnf.DBUrl == "" {
@@ -80,6 +95,12 @@ func loadConfig() {
 	if config.Version == "" {
 		log.Error().
 			Msg("Missing required environment variables:Version ")
+		os.Exit(1)
+
+	}
+	if config.JwtCnf.JwtSecret == "" || config.JwtCnf.JwtExpires == 0 {
+		log.Error().
+			Msg("Missing required environment variables:jwt ")
 		os.Exit(1)
 
 	}

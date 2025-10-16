@@ -6,6 +6,7 @@ import (
 	"school-management-system/internal/models"
 	"school-management-system/internal/repository"
 	"school-management-system/pkg/utils"
+	"time"
 )
 
 var (
@@ -14,7 +15,9 @@ var (
 )
 
 type execService struct {
-	repo repository.ExecRepo
+	repo      repository.ExecRepo
+	jwtSecret string
+	jwtExpire time.Duration
 }
 
 type ExecService interface {
@@ -23,12 +26,14 @@ type ExecService interface {
 	GetExecById(ctx context.Context, id int) (*models.Exec, error)
 	Update(ctx context.Context, fields map[string]interface{}, allowedFields map[string]bool, id int) (*models.Exec, error)
 	Delete(ctx context.Context, id int) error
-	Login(ctx context.Context, email, password string) (*models.ResExec, error)
+	Login(ctx context.Context, email, password string) (*models.ResExec, string, error)
 }
 
-func NewExecService(repo repository.ExecRepo) ExecService {
+func NewExecService(repo repository.ExecRepo, jwtSecret string, jwtExpire time.Duration) ExecService {
 	return &execService{
-		repo: repo,
+		repo:      repo,
+		jwtSecret: jwtSecret,
+		jwtExpire: jwtExpire,
 	}
 
 }
@@ -57,37 +62,36 @@ func (s *execService) Delete(ctx context.Context, id int) error {
 	return s.repo.Delete(ctx, id)
 }
 
-func (s *execService) Login(ctx context.Context, email, password string) (*models.ResExec, error) {
-
+func (s *execService) Login(ctx context.Context, email, password string) (*models.ResExec, string, error) {
 	exec, err := s.repo.GetExecByEmail(ctx, email)
 	if err != nil {
-		return nil, err
-
+		return nil, "", err
 	}
 	if exec == nil {
-		return nil, ErrExecNotFound
-
+		return nil, "", ErrExecNotFound
 	}
-	verifyExecLogin, err := utils.VerifyPassword(password, exec.Password)
+
+	valid, err := utils.VerifyPassword(password, exec.Password)
 	if err != nil {
-		return nil, err
-
+		return nil, "", err
 	}
-	if !verifyExecLogin {
-		return nil, ErrPasswordInvalid
-
+	if !valid {
+		return nil, "", ErrPasswordInvalid
 	}
-	if verifyExecLogin {
-		return &models.ResExec{
-			ID:        exec.ID,
-			FirstName: exec.FirstName,
-			LastName:  exec.LastName,
-			Email:     exec.Email,
-			Username:  exec.Username,
-			Role:      string(exec.Role),
-		}, nil
 
+	token, err := utils.SignedToken(exec.ID, exec.Email, exec.Username, string(exec.Role), s.jwtSecret, s.jwtExpire)
+	if err != nil {
+		return nil, "", err
 	}
-	return nil, err
 
+	res := &models.ResExec{
+		ID:        exec.ID,
+		FirstName: exec.FirstName,
+		LastName:  exec.LastName,
+		Email:     exec.Email,
+		Username:  exec.Username,
+		Role:      string(exec.Role),
+	}
+
+	return res, token, nil
 }

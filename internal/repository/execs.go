@@ -15,9 +15,10 @@ type execRepo struct {
 }
 
 type ExecRepo interface {
-	Create(ctx context.Context, exec models.Exec) (*models.Exec, error)
+	Create(ctx context.Context, exec *models.Exec) (*models.Exec, error)
 	Get(ctx context.Context, filters map[string]string, sort utils.SortOption) ([]*models.Exec, error)
 	GetExecById(ctx context.Context, id int) (*models.Exec, error)
+	GetExecByEmail(ctx context.Context, email string) (*models.Exec, error)
 	Update(ctx context.Context, fields map[string]interface{}, allowedFields map[string]bool, id int) (*models.Exec, error)
 	Delete(ctx context.Context, id int) error
 }
@@ -27,7 +28,7 @@ func NewExecRepo(db *sql.DB) ExecRepo {
 }
 
 // Create new exec
-func (repo *execRepo) Create(ctx context.Context, exec models.Exec) (*models.Exec, error) {
+func (repo *execRepo) Create(ctx context.Context, exec *models.Exec) (*models.Exec, error) {
 	query := `
 		INSERT INTO execs (
 			first_name,
@@ -214,4 +215,35 @@ func (repo *execRepo) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+// login exec
+
+func (repo *execRepo) GetExecByEmail(ctx context.Context, email string) (*models.Exec, error) {
+	query := `SELECT id, first_name, last_name, email, username, password, role, password_changed_at, password_reset_token, password_reset_token_expire, created_at, updated_at FROM execs WHERE email = $1`
+
+	exec := &models.Exec{}
+	err := repo.db.QueryRowContext(ctx, query, email).Scan(
+		&exec.ID,
+		&exec.FirstName,
+		&exec.LastName,
+		&exec.Email,
+		&exec.Username,
+		&exec.Password,
+		&exec.Role,
+		&exec.PasswordChangedAt,
+		&exec.PasswordResetToken,
+		&exec.PasswordResetTokenExpires,
+		&exec.CreatedAt,
+		&exec.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return exec, nil
+
 }

@@ -10,7 +10,7 @@ func (h *Handler) ExecsRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /execs/{id}", h.Delete)
 	mux.HandleFunc("POST /execs/{id}/updatepassword", h.Create)
 
-	mux.HandleFunc("POST /execs/login", h.Create)
+	mux.HandleFunc("POST /execs/login", h.Login)
 	mux.HandleFunc("POST /execs/logout", h.Create)
 	mux.HandleFunc("POST /execs/forgotpassword", h.Create)
 	mux.HandleFunc("POST /execs/resetpasssword/reset/{resetcode}", h.Create)

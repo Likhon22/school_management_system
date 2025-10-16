@@ -19,14 +19,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorHandler(w, err, "Validation failed", http.StatusBadRequest)
 		return
 	}
-	hashPassword, err := utils.HashPassword(reqExec.Password)
-	if err != nil {
-		utils.ErrorHandler(w, err, "something wrong", http.StatusInternalServerError)
-		return
-	}
-	reqExec.Password = hashPassword
 
-	created, err := h.service.Create(r.Context(), models.Exec{
+	created, err := h.service.Create(r.Context(), &models.Exec{
 		FirstName: reqExec.FirstName,
 		LastName:  reqExec.LastName,
 		Email:     reqExec.Email,

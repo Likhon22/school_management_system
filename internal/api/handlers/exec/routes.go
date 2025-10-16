@@ -5,8 +5,8 @@ import (
 	"school-management-system/internal/api/middlewares"
 )
 
-func (h *Handler) ExecsRoutes(mux *http.ServeMux, authMiddleware middlewares.MiddlewareFunc) {
-	mux.Handle("GET /execs", authMiddleware(http.HandlerFunc(h.Get)))
+func (h *Handler) ExecsRoutes(mux *http.ServeMux, authMiddleware *middlewares.AuthMiddleware) {
+	mux.Handle("GET /execs", authMiddleware.Jwt(http.HandlerFunc(h.Get)))
 	mux.HandleFunc("POST /execs", h.Create)
 	mux.HandleFunc("GET /execs/{id}", h.GetExecById)
 	mux.HandleFunc("PATCH /execs/{id}", h.Update)

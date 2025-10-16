@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"school-management-system/internal/models"
 	"school-management-system/pkg/utils"
 
@@ -52,7 +51,6 @@ func (repo *classRepo) Get(ctx context.Context, filters map[string]string, sort 
 	query := `SELECT id, name, created_at, updated_at FROM class`
 	filteredQuery, args := utils.BuildFilteredQuery(query, filters, true)
 	finalQuery := filteredQuery + utils.BuildSortQuery(sort)
-	log.Println(finalQuery)
 
 	rows, err := repo.db.QueryContext(ctx, finalQuery, args...)
 	if err != nil {
@@ -114,6 +112,7 @@ func (repo *classRepo) Update(ctx context.Context, data map[string]interface{}, 
 			args = append(args, v)
 			argsPos++
 		}
+
 	}
 
 	if len(setClauses) == 0 {
@@ -124,6 +123,7 @@ func (repo *classRepo) Update(ctx context.Context, data map[string]interface{}, 
 	query := fmt.Sprintf(`UPDATE class SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, name, created_at, updated_at`,
 		strings.Join(setClauses, ", "), argsPos)
 
+	fmt.Println("query", query)
 	class := &models.Class{}
 	err := repo.db.QueryRowContext(ctx, query, args...).Scan(
 		&class.ID,

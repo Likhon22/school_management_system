@@ -11,7 +11,7 @@ import (
 	"school-management-system/internal/api/handlers/teachers"
 )
 
-func SetupRoutes(teacherHandler *teachers.Handler, studentHandler *students.Handler, classHandler *class.Handler, execHandler *exec.Handler, authMiddleware middlewares.MiddlewareFunc) *http.ServeMux {
+func SetupRoutes(teacherHandler *teachers.Handler, studentHandler *students.Handler, classHandler *class.Handler, execHandler *exec.Handler, authMiddleware *middlewares.AuthMiddleware) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.Handle("GET /{$}", http.HandlerFunc(root.RootHandler))

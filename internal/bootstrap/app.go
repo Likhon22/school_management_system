@@ -31,7 +31,7 @@ func NewApp(cnf *config.Config, dbCon *sql.DB) *App {
 	mw := &middlewares.Middleware{
 		IPLimiter: middlewares.NewIPLimiter(time.Minute/12, 5),
 	}
-	authMiddleware := mw.Jwt(cnf.JwtCnf.JwtSecret)
+	authMiddleware := middlewares.NewAuthHandler(&cnf.JwtCnf)
 	log.Info().Msg("database connected successfully")
 	validator := validation.NewValidator()
 	//teacher handler

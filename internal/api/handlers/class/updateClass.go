@@ -12,10 +12,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorHandler(w, err, "Error updating class", http.StatusInternalServerError)
 		return
 	}
-	if err := utils.ReadJson(w, r, &reqClass); err != nil {
-		utils.ErrorHandler(w, err, "Error updating class", http.StatusInternalServerError)
-		return
-	}
+
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		utils.ErrorHandler(w, err, "Invalid id type", http.StatusInternalServerError)
@@ -23,6 +20,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updateMap := utils.StructToMap(reqClass)
+
 	updated, err := h.service.Update(r.Context(), updateMap, allowedFields, id)
 	if err != nil {
 		utils.ErrorHandler(w, err, "Error updating class", http.StatusInternalServerError)
@@ -30,10 +28,10 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if updated == nil {
-		utils.ErrorHandler(w, nil, "no student found", http.StatusNotFound)
+		utils.ErrorHandler(w, nil, "no class found", http.StatusNotFound)
 		return
 	}
-	if err := utils.SendResponse(w, r, "student updated successfully", http.StatusOK, updated); err != nil {
+	if err := utils.SendResponse(w, r, "class updated successfully", http.StatusOK, updated); err != nil {
 		utils.ErrorHandler(w, err, "Error updating class", http.StatusInternalServerError)
 		return
 	}

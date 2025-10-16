@@ -36,6 +36,7 @@ func (s *classService) GetClassById(ctx context.Context, id int) (*models.Class,
 	return s.repo.GetClassById(ctx, id)
 }
 func (s *classService) Update(ctx context.Context, class map[string]interface{}, allowedFields map[string]bool, id int) (*models.Class, error) {
+
 	return s.repo.Update(ctx, class, allowedFields, id)
 }
 func (s *classService) Delete(ctx context.Context, id int) error {

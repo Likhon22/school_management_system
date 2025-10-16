@@ -1,8 +1,21 @@
 package middlewares
 
-import "net/http"
+import (
+	"school-management-system/internal/config"
+)
 
-type MiddlewareFunc func(http.Handler) http.Handler
 type Middleware struct {
-	IPLimiter *ipLimiter
+	IPLimiter      *ipLimiter
+	AuthMiddleware AuthMiddleware
+}
+
+type AuthMiddleware struct {
+	JwtConfig *config.JwtConfig
+}
+
+func NewAuthHandler(JwtConfig *config.JwtConfig) *AuthMiddleware {
+	return &AuthMiddleware{
+		JwtConfig: JwtConfig,
+	}
+
 }

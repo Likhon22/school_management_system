@@ -12,11 +12,11 @@ func (h *Handler) ExecsRoutes(mux *http.ServeMux, amw *middlewares.AuthMiddlewar
 	mux.HandleFunc("GET /execs/{id}", h.GetExecById)
 	mux.HandleFunc("PATCH /execs/{id}", h.Update)
 	mux.HandleFunc("DELETE /execs/{id}", h.Delete)
-	mux.Handle("POST /execs/{id}/updatepassword", amw.Jwt((http.HandlerFunc(h.UpdatePassword))))
+	mux.Handle("POST /execs/updatepassword", amw.Jwt((http.HandlerFunc(h.UpdatePassword))))
 
 	mux.HandleFunc("POST /execs/login", h.Login)
 	mux.HandleFunc("POST /execs/logout", h.Logout)
-	mux.HandleFunc("POST /execs/forgotpassword", h.Create)
+	mux.HandleFunc("POST /execs/forgotpassword", h.ForgetPassword)
 	mux.HandleFunc("POST /execs/resetpasssword/reset/{resetcode}", h.Create)
 
 }

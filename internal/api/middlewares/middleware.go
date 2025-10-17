@@ -10,12 +10,12 @@ type Middleware struct {
 }
 
 type AuthMiddleware struct {
-	JwtConfig *config.JwtConfig
+	AuthConfig *config.AuthConfig
 }
 
-func NewAuthHandler(JwtConfig *config.JwtConfig) *AuthMiddleware {
+func NewAuthHandler(authConfig *config.AuthConfig) *AuthMiddleware {
 	return &AuthMiddleware{
-		JwtConfig: JwtConfig,
+		AuthConfig: authConfig,
 	}
 
 }

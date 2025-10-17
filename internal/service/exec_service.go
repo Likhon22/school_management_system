@@ -12,6 +12,7 @@ import (
 var (
 	ErrExecNotFound    = errors.New("no exec found with that email")
 	ErrPasswordInvalid = errors.New("invalid password")
+	ErrSamePassword    = errors.New("same password")
 )
 
 type execService struct {
@@ -28,6 +29,7 @@ type ExecService interface {
 	Delete(ctx context.Context, id int) error
 	Login(ctx context.Context, email, password string) (*models.ResExec, string, error)
 	UpdatePassword(ctx context.Context, id int, currentPassword, newPassword string) (string, error)
+	ForgetPassword(ctx context.Context, email string) (string, error)
 }
 
 func NewExecService(repo repository.ExecRepo, jwtSecret string, jwtExpire time.Duration) ExecService {
@@ -98,6 +100,9 @@ func (s *execService) Login(ctx context.Context, email, password string) (*model
 }
 
 func (s *execService) UpdatePassword(ctx context.Context, id int, currentPassword, newPassword string) (string, error) {
+	if currentPassword == newPassword {
+		return "", ErrSamePassword
+	}
 	exec, err := s.repo.GetExecById(ctx, id)
 	if err != nil {
 		return "", err
@@ -128,4 +133,20 @@ func (s *execService) UpdatePassword(ctx context.Context, id int, currentPasswor
 		return "", err
 	}
 	return token, nil
+}
+
+func (s *execService) ForgetPassword(ctx context.Context, email string) (string, error) {
+	if email == "" {
+		return "", ErrExecNotFound
+	}
+	user, err := s.repo.GetExecByEmail(ctx, email)
+	if err != nil {
+		return "", err
+	}
+
+	if user == nil {
+		return "", ErrExecNotFound
+	}
+
+	return "", nil
 }

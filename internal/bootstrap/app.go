@@ -31,7 +31,7 @@ func NewApp(cnf *config.Config, dbCon *sql.DB) *App {
 	mw := &middlewares.Middleware{
 		IPLimiter: middlewares.NewIPLimiter(time.Minute/12, 5),
 	}
-	authMiddleware := middlewares.NewAuthHandler(&cnf.JwtCnf)
+	authMiddleware := middlewares.NewAuthHandler(&cnf.AuthCnf)
 	log.Info().Msg("database connected successfully")
 	validator := validation.NewValidator()
 	//teacher handler
@@ -50,7 +50,7 @@ func NewApp(cnf *config.Config, dbCon *sql.DB) *App {
 	classHandler := class.NewHandler(classService, validator)
 	//exec handler
 	execRepo := repository.NewExecRepo(dbCon)
-	execService := service.NewExecService(execRepo, cnf.JwtCnf.JwtSecret, cnf.JwtCnf.JwtExpires)
+	execService := service.NewExecService(execRepo, cnf.AuthCnf.JwtSecret, cnf.AuthCnf.JwtExpires)
 	execHandler := exec.NewHandler(execService, validator)
 	mux := router.SetupRoutes(teacherHandler, studentHandler, classHandler, execHandler, authMiddleware)
 

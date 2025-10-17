@@ -30,6 +30,8 @@ func (h *Handler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	token, err := h.service.UpdatePassword(ctx, userId, updatePasswordReq.CurrentPassword, updatePasswordReq.NewPassword)
 	if err != nil {
 		switch err {
+		case service.ErrSamePassword:
+			utils.ErrorHandler(w, err, "same password.please give new password", http.StatusUnauthorized)
 		case service.ErrPasswordInvalid:
 			utils.ErrorHandler(w, err, "Password does not match", http.StatusUnauthorized)
 		case service.ErrExecNotFound:

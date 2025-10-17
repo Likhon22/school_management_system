@@ -15,7 +15,7 @@ func (aw *AuthMiddleware) Jwt(next http.Handler) http.Handler {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		token, err := utils.ValidateToken(tokenStr.Value, aw.JwtConfig.JwtSecret)
+		token, err := utils.ValidateToken(tokenStr.Value, aw.AuthConfig.JwtSecret)
 
 		if err != nil || !token.Valid {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)

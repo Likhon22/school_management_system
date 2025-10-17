@@ -1,8 +1,8 @@
 package config
 
 import (
+	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -11,7 +11,7 @@ import (
 type AuthConfig struct {
 	JwtSecret             string
 	JwtExpires            time.Duration
-	ResetTokenExpDuration int
+	ResetTokenExpDuration time.Duration
 }
 
 func LoadAuthConfig() AuthConfig {
@@ -24,9 +24,10 @@ func LoadAuthConfig() AuthConfig {
 		log.Fatal().Err(err).Msg("invalid JWT_EXPIRES format (e.g. '1h', '30m')")
 	}
 
-	resetTokenExpDuration, err := strconv.Atoi(resetTokenExpDurationStr)
+	resetTokenExpDuration, err := time.ParseDuration(resetTokenExpDurationStr)
 	if err != nil {
-		log.Fatal().Err(err).Msg("invalid RESET_TOKEN_EXP_DURATION; must be integer")
+		fmt.Println(resetTokenExpDuration)
+		log.Fatal().Err(err).Msg("invalid RESET_TOKEN_EXP_DURATION; must be time")
 	}
 
 	if jwtSecret == "" {

@@ -50,7 +50,7 @@ func NewApp(cnf *config.Config, dbCon *sql.DB) *App {
 	classHandler := class.NewHandler(classService, validator)
 	//exec handler
 	execRepo := repository.NewExecRepo(dbCon)
-	execService := service.NewExecService(execRepo, cnf.AuthCnf.JwtSecret, cnf.AuthCnf.JwtExpires)
+	execService := service.NewExecService(execRepo, &cnf.AuthCnf)
 	execHandler := exec.NewHandler(execService, validator)
 	mux := router.SetupRoutes(teacherHandler, studentHandler, classHandler, execHandler, authMiddleware)
 

@@ -8,6 +8,7 @@ import (
 	"school-management-system/internal/models"
 	"school-management-system/pkg/utils"
 	"strings"
+	"time"
 )
 
 type execRepo struct {
@@ -22,6 +23,7 @@ type ExecRepo interface {
 	Update(ctx context.Context, fields map[string]interface{}, allowedFields map[string]bool, id int) (*models.Exec, error)
 	Delete(ctx context.Context, id int) error
 	UpdatePassword(ctx context.Context, id int, newHashedPassword string) error
+	UpdateResetToken(ctx context.Context, hashTokenString string, expiry time.Time, id int) error
 }
 
 func NewExecRepo(db *sql.DB) ExecRepo {
@@ -265,6 +267,32 @@ func (repo *execRepo) UpdatePassword(ctx context.Context, id int, newHashedPassw
 	if err != nil {
 		return fmt.Errorf("failed to check rows affected: %w", err)
 	}
+	if rowsAffected == 0 {
+		return errors.New("no exec found with the given ID")
+	}
+
+	return nil
+}
+
+func (repo *execRepo) UpdateResetToken(ctx context.Context, hashTokenString string, expiry time.Time, id int) error {
+	query := `
+		UPDATE execs
+		SET password_reset_token = $1,
+		    password_reset_token_expire = $2,
+		    updated_at = NOW()
+		WHERE id = $3
+	`
+
+	result, err := repo.db.ExecContext(ctx, query, hashTokenString, expiry, id)
+	if err != nil {
+		return fmt.Errorf("failed to update reset token: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to check rows affected: %w", err)
+	}
+
 	if rowsAffected == 0 {
 		return errors.New("no exec found with the given ID")
 	}

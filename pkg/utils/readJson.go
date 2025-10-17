@@ -10,5 +10,5 @@ func ReadJson[T interface{}](w http.ResponseWriter, r *http.Request, data *T) er
 	defer r.Body.Close()
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	return decoder.Decode(&data)
+	return decoder.Decode(data)
 }

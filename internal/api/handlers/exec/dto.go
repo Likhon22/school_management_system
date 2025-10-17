@@ -27,3 +27,7 @@ type UpdatePasswordReqExec struct {
 	CurrentPassword string `json:"current_password,omitempty" validate:"required,min=6"`
 	NewPassword     string `json:"new_password,omitempty" validate:"required,min=6"`
 }
+
+type ForgetPasswordReqExec struct {
+	Email string `json:"email" validate:"required,email"`
+}

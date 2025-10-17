@@ -17,6 +17,6 @@ func (h *Handler) ExecsRoutes(mux *http.ServeMux, amw *middlewares.AuthMiddlewar
 	mux.HandleFunc("POST /execs/login", h.Login)
 	mux.HandleFunc("POST /execs/logout", h.Logout)
 	mux.HandleFunc("POST /execs/forgotpassword", h.ForgetPassword)
-	mux.HandleFunc("POST /execs/resetpasssword/reset/{resetcode}", h.Create)
+	mux.HandleFunc("POST /execs/resetpassword/reset/{resetcode}", h.ResetPassword)
 
 }

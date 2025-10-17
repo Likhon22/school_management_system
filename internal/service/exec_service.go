@@ -2,7 +2,12 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"fmt"
+	"school-management-system/internal/config"
 	"school-management-system/internal/models"
 	"school-management-system/internal/repository"
 	"school-management-system/pkg/utils"
@@ -16,9 +21,8 @@ var (
 )
 
 type execService struct {
-	repo      repository.ExecRepo
-	jwtSecret string
-	jwtExpire time.Duration
+	repo repository.ExecRepo
+	cnf  *config.AuthConfig
 }
 
 type ExecService interface {
@@ -32,11 +36,10 @@ type ExecService interface {
 	ForgetPassword(ctx context.Context, email string) (string, error)
 }
 
-func NewExecService(repo repository.ExecRepo, jwtSecret string, jwtExpire time.Duration) ExecService {
+func NewExecService(repo repository.ExecRepo, cnf *config.AuthConfig) ExecService {
 	return &execService{
-		repo:      repo,
-		jwtSecret: jwtSecret,
-		jwtExpire: jwtExpire,
+		repo: repo,
+		cnf:  cnf,
 	}
 
 }
@@ -82,7 +85,7 @@ func (s *execService) Login(ctx context.Context, email, password string) (*model
 		return nil, "", ErrPasswordInvalid
 	}
 
-	token, err := utils.SignedToken(exec.ID, exec.Email, exec.Username, string(exec.Role), s.jwtSecret, s.jwtExpire)
+	token, err := utils.SignedToken(exec.ID, exec.Email, exec.Username, string(exec.Role), s.cnf.JwtSecret, s.cnf.JwtExpires)
 	if err != nil {
 		return nil, "", err
 	}
@@ -128,7 +131,7 @@ func (s *execService) UpdatePassword(ctx context.Context, id int, currentPasswor
 	if err := s.repo.UpdatePassword(ctx, id, hashedPassword); err != nil {
 		return "", err
 	}
-	token, err := utils.SignedToken(exec.ID, exec.Email, exec.Username, string(exec.Role), s.jwtSecret, s.jwtExpire)
+	token, err := utils.SignedToken(exec.ID, exec.Email, exec.Username, string(exec.Role), s.cnf.JwtSecret, s.cnf.JwtExpires)
 	if err != nil {
 		return "", err
 	}
@@ -139,6 +142,7 @@ func (s *execService) ForgetPassword(ctx context.Context, email string) (string,
 	if email == "" {
 		return "", ErrExecNotFound
 	}
+
 	user, err := s.repo.GetExecByEmail(ctx, email)
 	if err != nil {
 		return "", err
@@ -148,5 +152,42 @@ func (s *execService) ForgetPassword(ctx context.Context, email string) (string,
 		return "", ErrExecNotFound
 	}
 
-	return "", nil
+	// Calculate exact expiration timestamp
+	expiryTime := time.Now().Add(s.cnf.ResetTokenExpDuration)
+
+	// Generate secure random token
+	tokenBytes := make([]byte, 32)
+	_, err = rand.Read(tokenBytes)
+	if err != nil {
+		return "", err
+	}
+
+	// Token to send in email
+	token := hex.EncodeToString(tokenBytes)
+
+	// Hash token to store in DB
+	hashToken := sha256.Sum256(tokenBytes)
+	hashTokenString := hex.EncodeToString(hashToken[:])
+
+	// Update DB with hashed token & expiry
+	err = s.repo.UpdateResetToken(ctx, hashTokenString, expiryTime, user.ID)
+	if err != nil {
+		return "", err
+	}
+
+	// Construct reset URL
+	resetURL := fmt.Sprintf("http://localhost:3000/execs/resetpassword/reset/%s", token)
+
+	// Message for email
+	message := fmt.Sprintf(
+		"Forgot your password? Reset it using the following link:\n%s\nIf you didn't request this, ignore this email. This link is valid for %d minutes.",
+		resetURL,
+		int(s.cnf.ResetTokenExpDuration.Minutes()),
+	)
+	err = utils.SendMail("likhonsarker793@gmail.com", []string{user.Email}, "Your password reset link", message)
+	if err != nil {
+		return "", err
+	}
+
+	return "password reset link mailed to user", nil
 }

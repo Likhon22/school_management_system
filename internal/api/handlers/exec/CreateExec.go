@@ -11,7 +11,7 @@ import (
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var reqExec ReqCreateExec
 	if err := utils.ReadJson(w, r, &reqExec); err != nil {
-		utils.ErrorHandler(w, err, "Error creating exec", http.StatusInternalServerError)
+		utils.ErrorHandler(w, err, "something went wrong", http.StatusInternalServerError)
 		return
 	}
 

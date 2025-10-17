@@ -27,6 +27,7 @@ type ExecService interface {
 	Update(ctx context.Context, fields map[string]interface{}, allowedFields map[string]bool, id int) (*models.Exec, error)
 	Delete(ctx context.Context, id int) error
 	Login(ctx context.Context, email, password string) (*models.ResExec, string, error)
+	UpdatePassword(ctx context.Context, id int, currentPassword, newPassword string) (string, error)
 }
 
 func NewExecService(repo repository.ExecRepo, jwtSecret string, jwtExpire time.Duration) ExecService {
@@ -94,4 +95,37 @@ func (s *execService) Login(ctx context.Context, email, password string) (*model
 	}
 
 	return res, token, nil
+}
+
+func (s *execService) UpdatePassword(ctx context.Context, id int, currentPassword, newPassword string) (string, error) {
+	exec, err := s.repo.GetExecById(ctx, id)
+	if err != nil {
+		return "", err
+	}
+
+	if exec == nil {
+		return "", ErrExecNotFound
+	}
+
+	valid, err := utils.VerifyPassword(currentPassword, exec.Password)
+	if err != nil {
+		return "", err
+	}
+	if !valid {
+		return "", ErrPasswordInvalid
+	}
+
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return "", err
+	}
+
+	if err := s.repo.UpdatePassword(ctx, id, hashedPassword); err != nil {
+		return "", err
+	}
+	token, err := utils.SignedToken(exec.ID, exec.Email, exec.Username, string(exec.Role), s.jwtSecret, s.jwtExpire)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }

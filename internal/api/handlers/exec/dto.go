@@ -19,6 +19,11 @@ type ReqUpdateExec struct {
 }
 
 type ReqLoginExec struct {
- 	Email    string `json:"email" validate:"required,email"`
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=6"`
+}
+
+type UpdatePasswordReqExec struct {
+	CurrentPassword string `json:"current_password,omitempty" validate:"required,min=6"`
+	NewPassword     string `json:"new_password,omitempty" validate:"required,min=6"`
 }

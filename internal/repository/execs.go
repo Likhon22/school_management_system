@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"school-management-system/internal/models"
 	"school-management-system/pkg/utils"
@@ -20,6 +21,7 @@ type ExecRepo interface {
 	GetExecByEmail(ctx context.Context, email string) (*models.Exec, error)
 	Update(ctx context.Context, fields map[string]interface{}, allowedFields map[string]bool, id int) (*models.Exec, error)
 	Delete(ctx context.Context, id int) error
+	UpdatePassword(ctx context.Context, id int, newHashedPassword string) error
 }
 
 func NewExecRepo(db *sql.DB) ExecRepo {
@@ -243,4 +245,29 @@ func (repo *execRepo) GetExecByEmail(ctx context.Context, email string) (*models
 
 	return exec, nil
 
+}
+
+func (repo *execRepo) UpdatePassword(ctx context.Context, id int, newHashedPassword string) error {
+	query := `
+		UPDATE execs
+		SET password = $1,
+		    password_changed_at = NOW(),
+		    updated_at = NOW()
+		WHERE id = $2
+	`
+
+	result, err := repo.db.ExecContext(ctx, query, newHashedPassword, id)
+	if err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to check rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return errors.New("no exec found with the given ID")
+	}
+
+	return nil
 }

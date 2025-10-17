@@ -12,7 +12,7 @@ func (h *Handler) ExecsRoutes(mux *http.ServeMux, amw *middlewares.AuthMiddlewar
 	mux.HandleFunc("GET /execs/{id}", h.GetExecById)
 	mux.HandleFunc("PATCH /execs/{id}", h.Update)
 	mux.HandleFunc("DELETE /execs/{id}", h.Delete)
-	mux.HandleFunc("POST /execs/{id}/updatepassword", h.Create)
+	mux.Handle("POST /execs/{id}/updatepassword", amw.Jwt((http.HandlerFunc(h.UpdatePassword))))
 
 	mux.HandleFunc("POST /execs/login", h.Login)
 	mux.HandleFunc("POST /execs/logout", h.Logout)

@@ -14,6 +14,7 @@ func (h *Handler) GetClassById(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
+	fmt.Println(id)
 	class, err := h.service.GetClassById(r.Context(), id)
 	if err != nil {
 		utils.ErrorHandler(w, err, "Error getting class", http.StatusInternalServerError)

@@ -12,6 +12,7 @@ import (
 func main() {
 	cnf := config.GetConfig()
 	dbCon, err := db.ConnectDB(cnf.DBCnf)
+
 	if err != nil {
 		log.Error().
 			Err(err).

@@ -43,6 +43,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 		Expires:  time.Now().Add(1 * time.Hour),
 	})
 	resp := LoginResponse{

@@ -31,3 +31,4 @@ go.work.sum
 # air files
 bin/
 temp/
+binary/

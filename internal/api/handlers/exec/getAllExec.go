@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"fmt"
 	"net/http"
 	"school-management-system/pkg/utils"
 )
@@ -8,6 +9,7 @@ import (
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
+	fmt.Println("Exec")
 
 	filters := utils.BUildFilters(r, params)
 	sortOptions := utils.ParseSortQueryOptions(r, allowedSortFields, "created_at DESC")
@@ -24,3 +26,6 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+
+

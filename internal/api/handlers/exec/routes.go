@@ -7,7 +7,7 @@ import (
 )
 
 func (h *Handler) ExecsRoutes(mux *http.ServeMux, amw *middlewares.AuthMiddleware) {
-	mux.Handle("GET /execs", amw.Jwt(amw.RequiredRoles(string(models.RoleAdmin))(http.HandlerFunc(h.Get))))
+	mux.Handle("GET /execs", amw.Jwt(amw.RequiredRoles(string(models.RoleExec))(http.HandlerFunc(h.Get))))
 	mux.HandleFunc("POST /execs", h.Create)
 	mux.HandleFunc("GET /execs/{id}", h.GetExecById)
 	mux.HandleFunc("PATCH /execs/{id}", h.Update)

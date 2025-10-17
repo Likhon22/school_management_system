@@ -15,9 +15,11 @@ import (
 )
 
 var (
-	ErrExecNotFound    = errors.New("no exec found with that email")
-	ErrPasswordInvalid = errors.New("invalid password")
-	ErrSamePassword    = errors.New("same password")
+	ErrExecNotFound          = errors.New("no exec found with that email")
+	ErrPasswordInvalid       = errors.New("invalid password")
+	ErrSamePassword          = errors.New("same password")
+	ErrTokenExpire           = errors.New("token time expired")
+	ErrPasswordDoestNotMatch = errors.New("Password does not match")
 )
 
 type execService struct {
@@ -34,6 +36,7 @@ type ExecService interface {
 	Login(ctx context.Context, email, password string) (*models.ResExec, string, error)
 	UpdatePassword(ctx context.Context, id int, currentPassword, newPassword string) (string, error)
 	ForgetPassword(ctx context.Context, email string) (string, error)
+	ResetPassword(ctx context.Context, token string, newPassword, confirmPassword string) (string, error)
 }
 
 func NewExecService(repo repository.ExecRepo, cnf *config.AuthConfig) ExecService {
@@ -123,12 +126,7 @@ func (s *execService) UpdatePassword(ctx context.Context, id int, currentPasswor
 		return "", ErrPasswordInvalid
 	}
 
-	hashedPassword, err := utils.HashPassword(newPassword)
-	if err != nil {
-		return "", err
-	}
-
-	if err := s.repo.UpdatePassword(ctx, id, hashedPassword); err != nil {
+	if err := s.setNewPassword(ctx, id, newPassword); err != nil {
 		return "", err
 	}
 	token, err := utils.SignedToken(exec.ID, exec.Email, exec.Username, string(exec.Role), s.cnf.JwtSecret, s.cnf.JwtExpires)
@@ -153,7 +151,7 @@ func (s *execService) ForgetPassword(ctx context.Context, email string) (string,
 	}
 
 	// Calculate exact expiration timestamp
-	expiryTime := time.Now().Add(s.cnf.ResetTokenExpDuration)
+	expiryTime := time.Now().UTC().Add(s.cnf.ResetTokenExpDuration)
 
 	// Generate secure random token
 	tokenBytes := make([]byte, 32)
@@ -190,4 +188,55 @@ func (s *execService) ForgetPassword(ctx context.Context, email string) (string,
 	}
 
 	return "password reset link mailed to user", nil
+}
+func (s *execService) ResetPassword(ctx context.Context, token string, newPassword, confirmPassword string) (string, error) {
+	if token == "" {
+		return "", errors.New("token can't be empty")
+
+	}
+	if newPassword != confirmPassword {
+		return "", ErrPasswordDoestNotMatch
+
+	}
+	tokenBytes, err := hex.DecodeString(token)
+	if err != nil {
+		return "", err
+	}
+	hashToken := sha256.Sum256(tokenBytes)
+	hashTokenString := hex.EncodeToString(hashToken[:])
+	user, err := s.repo.ResetPassword(ctx, hashTokenString)
+	if err != nil {
+		return "", err
+	}
+	if user == nil {
+		return "", ErrExecNotFound
+
+	}
+	expiry := user.PasswordResetTokenExpires.Time.UTC()
+	now := time.Now().UTC()
+	fmt.Println("current time", now, "reset token time", expiry)
+	if !user.PasswordResetTokenExpires.Valid || expiry.Before(now) {
+		return "", ErrTokenExpire
+
+	}
+	if err := s.setNewPassword(ctx, user.ID, newPassword); err != nil {
+		return "", err
+	}
+
+	return "Password reset successful. Please login again", nil
+}
+
+// internal helper func
+
+func (s *execService) setNewPassword(ctx context.Context, id int, newPassword string) error {
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.UpdatePassword(ctx, id, hashedPassword); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -31,3 +31,8 @@ type UpdatePasswordReqExec struct {
 type ForgetPasswordReqExec struct {
 	Email string `json:"email" validate:"required,email"`
 }
+
+type ResetPasswordReqExec struct {
+	NewPassword     string `json:"new_password,omitempty" validate:"required,min=6"`
+	ConfirmPassword string `json:"confirm_password,omitempty" validate:"required,min=6"`
+}

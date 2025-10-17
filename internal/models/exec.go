@@ -23,7 +23,7 @@ type Exec struct {
 	Password                  string         `json:"password,omitempty" db:"password"`
 	PasswordChangedAt         sql.NullTime   `json:"password_changed_at,omitempty" db:"password_changed_at"`
 	PasswordResetToken        sql.NullString `json:"password_reset_token,omitempty" db:"password_reset_token"`
-	PasswordResetTokenExpires sql.NullString `json:"password_reset_token_expire,omitempty" db:"password_reset_token_expire"`
+	PasswordResetTokenExpires sql.NullTime   `json:"password_reset_token_expire,omitempty" db:"password_reset_token_expire"`
 	Role                      Role           `json:"role,omitempty" db:"role"`
 	CreatedAt                 time.Time      `json:"created_at" db:"created_at"`
 	UpdatedAt                 time.Time      `json:"updated_at" db:"updated_at"`

@@ -24,6 +24,7 @@ type ExecRepo interface {
 	Delete(ctx context.Context, id int) error
 	UpdatePassword(ctx context.Context, id int, newHashedPassword string) error
 	UpdateResetToken(ctx context.Context, hashTokenString string, expiry time.Time, id int) error
+	ResetPassword(ctx context.Context, hashTokenString string) (*models.Exec, error)
 }
 
 func NewExecRepo(db *sql.DB) ExecRepo {
@@ -298,4 +299,30 @@ func (repo *execRepo) UpdateResetToken(ctx context.Context, hashTokenString stri
 	}
 
 	return nil
+}
+
+func (repo *execRepo) ResetPassword(ctx context.Context, hashTokenString string) (*models.Exec, error) {
+	query := `SELECT id, first_name, last_name, email, username, password, role, password_changed_at, password_reset_token, password_reset_token_expire, created_at, updated_at FROM execs WHERE password_reset_token = $1`
+	exec := &models.Exec{}
+	err := repo.db.QueryRowContext(ctx, query, hashTokenString).Scan(
+		&exec.ID,
+		&exec.FirstName,
+		&exec.LastName,
+		&exec.Email,
+		&exec.Username,
+		&exec.Password,
+		&exec.Role,
+		&exec.PasswordChangedAt,
+		&exec.PasswordResetToken,
+		&exec.PasswordResetTokenExpires,
+		&exec.CreatedAt,
+		&exec.UpdatedAt,
+	)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return exec, nil
 }

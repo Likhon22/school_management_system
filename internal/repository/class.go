@@ -123,7 +123,6 @@ func (repo *classRepo) Update(ctx context.Context, data map[string]interface{}, 
 	query := fmt.Sprintf(`UPDATE class SET %s, updated_at = NOW() WHERE id = $%d RETURNING id, name, created_at, updated_at`,
 		strings.Join(setClauses, ", "), argsPos)
 
-	fmt.Println("query", query)
 	class := &models.Class{}
 	err := repo.db.QueryRowContext(ctx, query, args...).Scan(
 		&class.ID,
